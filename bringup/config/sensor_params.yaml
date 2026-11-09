@@ -1,0 +1,16 @@
+# Generic NavSat/GPS sensor parameters
+# Single source of truth: read by launch files and Jinja2 templates.
+#
+# Mounting pose (x, y, z, roll, pitch, yaw) and parent_link are NOT here.
+# They are provided externally by robot_params.yaml (under sensors:).
+#
+# Sections:
+#   hardware    — physical body properties
+#   simulation  — Gazebo sensor settings
+
+hardware:
+  weight: 0.05              # Antenna + receiver mass estimate (kg)
+  frame_id: "navsat_link"   # TF frame published by the driver and used in simulation
+
+simulation:
+  update_rate: 10           # Sensor update rate (Hz)

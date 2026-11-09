@@ -1,0 +1,52 @@
+{#
+  Fragment: injectable into a <model> block in the parent robot SDF.
+  NOT a standalone SDF — no <sdf> or <model> root.
+
+  Required variables (provided by the parent launch via robot_params.yaml):
+    prefix            — name prefix for all links/joints (may be '')
+    namespace         — ROS 2 topic namespace (may be '')
+    parent_link       — parent link name inside the model (relative to base_footprint)
+    x, y, z           — translation from parent_link (m)
+    roll, pitch, yaw  — rotation from parent_link (rad)
+
+  From sensor_params.yaml (hardware):
+    frame_id          — TF frame / NavSat origin link name
+    weight            — sensor mass (kg)
+
+  From sensor_params.yaml (simulation):
+    update_rate       — sensor update rate (Hz)
+#}
+
+  <link name="{{ prefix }}{{ frame_id }}">
+    <pose relative_to="{{ parent_link }}">{{ x }} {{ y }} {{ z }} {{ roll }} {{ pitch }} {{ yaw }}</pose>
+    <visual name="{{ prefix }}navsat_visual">
+      <geometry><box><size>0.05 0.05 0.02</size></box></geometry>
+      <material>
+        <ambient>0.0 0.0 0.8 1.0</ambient>
+        <diffuse>0.0 0.0 0.8 1.0</diffuse>
+        <specular>0.1 0.1 0.1 1</specular>
+        <emissive>0 0 0 1</emissive>
+      </material>
+    </visual>
+    <inertial>
+      <mass>{{ weight }}</mass>
+      <inertia>
+        <ixx>0.000001</ixx><ixy>0</ixy><ixz>0</ixz>
+        <iyy>0.000001</iyy><iyz>0</iyz><izz>0.000001</izz>
+      </inertia>
+    </inertial>
+    <sensor name="{{ prefix }}navsat_sensor" type="navsat">
+      <always_on>1</always_on>
+      <update_rate>{{ update_rate }}</update_rate>
+{% if namespace %}
+      <topic>/{{ namespace }}/navsat</topic>
+{% else %}
+      <topic>/navsat</topic>
+{% endif %}
+    </sensor>
+  </link>
+
+  <joint name="{{ prefix }}navsat_joint" type="fixed">
+    <parent>{{ parent_link }}</parent>
+    <child>{{ prefix }}{{ frame_id }}</child>
+  </joint>
